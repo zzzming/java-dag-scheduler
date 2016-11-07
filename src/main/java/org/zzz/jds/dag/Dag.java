@@ -8,36 +8,83 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
+import com.rits.cloning.Cloner;
 
 /**
+ * Direct acyclic graph
+ * In this design, a DAG can also be a vertex possibly in another DAG.
  * @author ming luo
  *
  */
-public class Dag extends Vertex {
-    private Map<Integer, Vertex<?>> vertices = new HashMap<>();
+public class Dag <T> extends Vertex {
+	//keep track all contained vertice
+    private Map<UUID, Vertex<?>> vertices = new HashMap<>();
 
-    public Dag(Integer id) {
-        super(id);
+    public Dag() {
+        super();
     }
 
+    /**
+     * Put an edge between two vertices.
+     * @param fromV
+     * @param toV
+     * @throws DagCycleException
+     * @throws DuplicatedEdgeException 
+     */
     public void putEdge(Vertex<?> fromV, Vertex<?> toV)
-            throws DagCycleException {
-        if (fromV == toV)
-            throw new DagCycleException("self loop is not allowed");
+            throws DagCycleException, DuplicatedEdgeException {
+        testSelfLoop(fromV, toV);
+
         Edge e = new Edge(fromV.getId(), toV.getId());
-        if (!vertices.containsKey(fromV.getId())) {
-            vertices.put(fromV.getId(), fromV);
-        }
-        if (!vertices.containsKey(toV.getId())) {
-            vertices.put(toV.getId(), toV);
-        }
         fromV.addOutDegree(e);
         toV.addInDegree(e);
+        boolean fromVNew = addVertex(fromV);
+        boolean toVNew = addVertex(toV);
+
         if (!isDag()) {
-            throw new DagCycleException("self loop is not allowed");
+            //roll back changes if the new vertices and edge introduce a loop.
+            fromV.removeOutDegree(e);
+            toV.removeInDegree(e);
+            if (fromVNew) vertices.remove(fromV.getId());
+            if (toVNew)   vertices.remove(toV.getId());
+            throw new DagCycleException("A cycle is detected.");
         }
+    }
+
+    public void removeEdge(Vertex<?> fromV, Vertex<?> toV) throws NonexistentVertexException {
+        testVertexExist(fromV);
+        testVertexExist(toV);
+
+        Edge e = new Edge(fromV.getId(), toV.getId());
+        fromV.removeOutDegree(e);
+        toV.removeInDegree(e);
+
+    }
+    private void testVertexExist(Vertex v) throws NonexistentVertexException {
+        if (!vertices.containsKey(v.getId()))
+            throw new NonexistentVertexException("Nonexistent vertext " + v.getId());
+    }
+
+    private void testSelfLoop(Vertex<?> fromV, Vertex<?> toV)
+            throws DagCycleException {
+        if (fromV == toV)
+            throw new DagCycleException("No self loop is permitted.");
+    }
+
+    /**
+     * 
+     * @param v
+     * @return true if it's a new vertex.
+     */
+    public boolean addVertex(Vertex<?> v) {
+        if (!vertices.containsKey(v.getId())) {
+            vertices.put(v.getId(), v);
+            return true;
+        }
+        return false;
     }
     /**
      * @return the vertices
@@ -62,32 +109,37 @@ public class Dag extends Vertex {
      * @return
      */
     public boolean isDag() {
-         Queue<Vertex<?>> s = topologicalSorting(new HashMap<>(this.vertices),
-                 new LinkedBlockingQueue<>());//.isEmpty();
-         System.out.println(s.toString());
+        Cloner cloner = new Cloner();
+        /**
+         * TODO: remove deep clone
+         * Deep clone is a very inefficient way for sorting purpose
+         * extra space!!!
+         */
+        Map<UUID, Vertex<?>> map = cloner.deepClone(this.vertices);
+         Queue<Vertex<?>> s = topologicalSorting(map,
+                 new LinkedBlockingQueue<>());
          return !s.isEmpty();
     }
     /**
      * topological sort algorithm
      * @return
      */
-    public Queue<Vertex<?>> topologicalSorting(Map<Integer, Vertex<?>> nodes, Queue<Vertex<?>> sorted) {
+    public Queue<Vertex<?>> topologicalSorting(Map<UUID, Vertex<?>> nodes, Queue<Vertex<?>> sorted) {
+        //nodes -> all remaining vertices in the graph to be sorted
         Queue<Vertex<?>> s = new LinkedBlockingQueue<>(buildRootVertices(nodes.values()));
         if (s.isEmpty()) {
             //cycle detected when nodes are not empty() so return empty sets since only to sort a dag
             //this is an error condition
             return nodes.isEmpty() ? sorted : new LinkedBlockingQueue<>();
         }
-//        s.stream().forEach(v -> 
-//                                (Map<Integer, Edge> e = v.getOutDegree();
-//                                nodes.remove(v.getId());
-        for (Vertex<?> v : s) {
-             for (Edge e : v.getOutDegree().values()) {
-                  nodes.get(e.getToV()).removeInDegree(e.getId());
-             }
-             sorted.add(v);
-             nodes.remove(v.getId());
-        }
+
+        s.parallelStream().forEach( n -> {
+             n.getOutDegree().values().stream().forEach( e->
+                  nodes.get(e.getToV()).removeInDegree(e.getId())
+             );
+             sorted.add(n);
+             nodes.remove(n.getId());
+        });
         return topologicalSorting(nodes, sorted);
     }
     public Set<Vertex<?>> buildRootVertices(Collection<Vertex<?>> vPool) {
@@ -96,21 +148,10 @@ public class Dag extends Vertex {
             collect(Collectors.toSet());
     }
     /**
-     * @param args
+     * TODO: Neatly print the data structure of the graph.
+     * It's a static method for general printing purpose.
      */
-    public static void main(String[] args) {
-        Vertex<Integer> N1 = new Vertex<>(1);
-        Vertex<Integer> N2 = new Vertex<>(2);
-        Vertex<Integer> N3 = new Vertex<>(3);
-
-        Dag dag = new Dag(90);
-        try {
-			dag.putEdge(N1, N2);
-			dag.putEdge(N2, N3);
-		} catch (DagCycleException e) {
-			e.printStackTrace();
-		}
-
+    static public void prettyPrint (Map<UUID, Vertex<?>> vMap) {
+       
     }
-
 }
