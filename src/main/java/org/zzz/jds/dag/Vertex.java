@@ -6,6 +6,7 @@ package org.zzz.jds.dag;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 /**
  * Vertex refers to a node in the graph theory.
@@ -17,9 +18,20 @@ public class Vertex <T> extends Element {
 
     private Map<UUID, Edge> inDegree  = new HashMap<>();
     private Map<UUID, Edge> outDegree = new HashMap<>();
+    T task;
 
+    public Vertex(T t) {
+       super();
+       task = t;
+    }
     public Vertex() {
-    	super();
+       super();
+    }
+    public void addTask(T t) {
+       task = t;
+    }
+    public T getTask() {
+       return task;
     }
 
     public void addInDegree(Edge e) throws DuplicatedEdgeException {

@@ -26,6 +26,9 @@ public class Dag <T> extends Vertex {
     public Dag() {
         super();
     }
+    public Dag(T t) {
+        super(t);
+    }
 
     /**
      * Put an edge between two vertices.
