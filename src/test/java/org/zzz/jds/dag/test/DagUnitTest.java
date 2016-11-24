@@ -19,11 +19,11 @@ import org.zzz.jds.dag.Vertex;
 public class DagUnitTest {
 
     private Dag fiveVerticeDag = new Dag();
-    Vertex<Integer> N1 = new Vertex<>();
-    Vertex<Integer> N2 = new Vertex<>();
-    Vertex<Integer> N3 = new Vertex<>();
-    Vertex<Integer> N4 = new Vertex<>();
-    Vertex<Integer> N5 = new Vertex<>();
+    Vertex<Integer> N1 = new Vertex<>(new Integer(0));
+    Vertex<Integer> N2 = new Vertex<>(new Integer(0));
+    Vertex<Integer> N3 = new Vertex<>(new Integer(0));
+    Vertex<Integer> N4 = new Vertex<>(new Integer(0));
+    Vertex<Integer> N5 = new Vertex<>(new Integer(0));
     /**
      * @throws java.lang.Exception
      * 
@@ -39,8 +39,8 @@ public class DagUnitTest {
 
     @Test (expected=DagCycleException.class)
     public void testFailSelfLoopVertex() throws DagCycleException, DuplicatedEdgeException{
-        Vertex<Integer> n1 = new Vertex<>();
-        Vertex<Integer> n2 = new Vertex<>();
+        Vertex<Integer> n1 = new Vertex<>(new Integer(0));
+        Vertex<Integer> n2 = new Vertex<>(new Integer(0));
         Dag dag = new Dag();
         dag.putEdge(n1, n2);
         dag.putEdge(n2, n1);
@@ -50,7 +50,7 @@ public class DagUnitTest {
 
     @Test (expected=DagCycleException.class)
     public void testOneSelfLoopVertex() throws DagCycleException, DuplicatedEdgeException{
-    	Vertex<Integer> n1 = new Vertex<>();
+    	Vertex<Integer> n1 = new Vertex<>(new Integer(0));
         Dag dag = new Dag();
         dag.putEdge(n1, n1);
 
@@ -64,7 +64,7 @@ public class DagUnitTest {
 
     @Test
     public void testAddVertex5VertexDag() throws DagCycleException, DuplicatedEdgeException {
-        Vertex<Integer> n6 = new Vertex<>();
+        Vertex<Integer> n6 = new Vertex<>(new Integer(0));
         fiveVerticeDag.putEdge(N5, n6);
         fiveVerticeDag.putEdge(N3, n6);
         assertTrue(fiveVerticeDag.isDag());

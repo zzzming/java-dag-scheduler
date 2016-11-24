@@ -11,6 +11,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
+
+import org.zzz.jds.task.EmptyTask;
+
 import com.rits.cloning.Cloner;
 
 /**
@@ -20,11 +23,11 @@ import com.rits.cloning.Cloner;
  *
  */
 public class Dag <T> extends Vertex {
-	//keep track all contained vertice
+    //keep track all contained vertices
     private Map<UUID, Vertex<?>> vertices = new HashMap<>();
 
     public Dag() {
-        super();
+        super(new EmptyTask());
     }
     public Dag(T t) {
         super(t);
@@ -129,7 +132,7 @@ public class Dag <T> extends Vertex {
      */
     public Queue<Vertex<?>> topologicalSorting(Map<UUID, Vertex<?>> nodes, Queue<Vertex<?>> sorted) {
         //nodes -> all remaining vertices in the graph to be sorted
-        Queue<Vertex<?>> s = new LinkedBlockingQueue<>(buildRootVertices(nodes.values()));
+        Queue<Vertex<?>> s = new LinkedBlockingQueue<>(getRootVertices(nodes.values()));
         if (s.isEmpty()) {
             //cycle detected when nodes are not empty() so return empty sets since only to sort a dag
             //this is an error condition
@@ -145,10 +148,30 @@ public class Dag <T> extends Vertex {
         });
         return topologicalSorting(nodes, sorted);
     }
-    public Set<Vertex<?>> buildRootVertices(Collection<Vertex<?>> vPool) {
+    /**
+     * return a list of root vertices. Root vertices are vertex which has only out degree edges but no in degree edges.
+     * @param vPool
+     * @return
+     */
+    public static Set<Vertex<?>> getRootVertices(Collection<Vertex<?>> vPool) {
         return vPool.parallelStream().
             filter(v -> v.getInDegree().size() == 0).
             collect(Collectors.toSet());
+    }
+    public Set<Vertex<?>> getRootVertices() {
+        return getRootVertices(this.vertices.values());
+    }
+    /**
+     * Remove the root and its associated in-degree against the receiving vertices.
+     * @param vPool
+     */
+    public void romoveRootVertices(Collection<Vertex<?>> vPool) {
+        vPool.parallelStream().forEach( n -> {
+            n.getOutDegree().values().stream().forEach( e->
+                 this.vertices.get(e.getToV()).removeInDegree(e.getId())
+            );
+            this.vertices.remove(n.getId());
+       });
     }
     /**
      * TODO: Neatly print the data structure of the graph.

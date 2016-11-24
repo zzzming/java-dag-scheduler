@@ -24,9 +24,6 @@ public class Vertex <T> extends Element {
        super();
        task = t;
     }
-    public Vertex() {
-       super();
-    }
     public void addTask(T t) {
        task = t;
     }
@@ -68,7 +65,7 @@ public class Vertex <T> extends Element {
     }
     public boolean equals(Object o) {
         if (o instanceof Vertex) {
-        	Vertex v = (Vertex)o;
+            Vertex v = (Vertex)o;
             return this.getId().equals(v.getId());
         } else {
             return false;
