@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+import org.zzz.jds.dag.exception.DuplicatedEdgeException;
+
 /**
  * Vertex refers to a node in the graph theory.
  * A vertex can also contain another graph (namely DAG).
@@ -62,6 +64,18 @@ public class Vertex <T> extends Element {
     }
     public Map<UUID, Edge> getOutDegree() {
         return outDegree;
+    }
+    /**
+     * If T is a relationship interface, vertex can apply its relationship to T.
+     * Relationship refers to parent and child UUID.
+     */
+    public void applyRelationship() {
+        if (task instanceof Relationship) {
+            Relationship r = (Relationship) task;
+            this.getOutDegree().values().parallelStream().forEach(e -> r.addChild(e.getToV()));
+            this.getInDegree().values().parallelStream().forEach(e -> r.addParent(e.getFromV()));
+            r.setId(getId());
+        }
     }
     public boolean equals(Object o) {
         if (o instanceof Vertex) {

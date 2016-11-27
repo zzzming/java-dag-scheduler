@@ -8,9 +8,9 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.zzz.jds.dag.Dag;
-import org.zzz.jds.dag.DagCycleException;
-import org.zzz.jds.dag.DuplicatedEdgeException;
 import org.zzz.jds.dag.Vertex;
+import org.zzz.jds.dag.exception.DagCycleException;
+import org.zzz.jds.dag.exception.DuplicatedEdgeException;
 
 /**
  * @author ming luo
@@ -18,7 +18,7 @@ import org.zzz.jds.dag.Vertex;
  */
 public class DagUnitTest {
 
-    private Dag fiveVerticeDag = new Dag();
+    private Dag<Integer> fiveVerticeDag = new Dag<>(new Integer(0));
     Vertex<Integer> N1 = new Vertex<>(new Integer(0));
     Vertex<Integer> N2 = new Vertex<>(new Integer(0));
     Vertex<Integer> N3 = new Vertex<>(new Integer(0));
@@ -41,7 +41,7 @@ public class DagUnitTest {
     public void testFailSelfLoopVertex() throws DagCycleException, DuplicatedEdgeException{
         Vertex<Integer> n1 = new Vertex<>(new Integer(0));
         Vertex<Integer> n2 = new Vertex<>(new Integer(0));
-        Dag dag = new Dag();
+        Dag<Integer> dag = new Dag<>(new Integer(0));
         dag.putEdge(n1, n2);
         dag.putEdge(n2, n1);
         
@@ -51,7 +51,7 @@ public class DagUnitTest {
     @Test (expected=DagCycleException.class)
     public void testOneSelfLoopVertex() throws DagCycleException, DuplicatedEdgeException{
     	Vertex<Integer> n1 = new Vertex<>(new Integer(0));
-        Dag dag = new Dag();
+        Dag<Integer> dag = new Dag<>(new Integer(0));
         dag.putEdge(n1, n1);
 
         assertFalse(dag.isDag());

@@ -12,7 +12,9 @@ import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
-import org.zzz.jds.task.EmptyTask;
+import org.zzz.jds.dag.exception.DagCycleException;
+import org.zzz.jds.dag.exception.DuplicatedEdgeException;
+import org.zzz.jds.dag.exception.NonexistentVertexException;
 
 import com.rits.cloning.Cloner;
 
@@ -26,9 +28,6 @@ public class Dag <T> extends Vertex {
     //keep track all contained vertices
     private Map<UUID, Vertex<?>> vertices = new HashMap<>();
 
-    public Dag() {
-        super(new EmptyTask());
-    }
     public Dag(T t) {
         super(t);
     }
@@ -178,6 +177,16 @@ public class Dag <T> extends Vertex {
      * It's a static method for general printing purpose.
      */
     static public void prettyPrint (Map<UUID, Vertex<?>> vMap) {
-       
+    }
+    /**
+     * If T is a relationship interface, vertex can apply its relationship to T.
+     * Relationship refers to parent and child UUID.
+     */
+    public void applyRelationship() {
+    	if (task instanceof Relationship) {
+            Relationship r = (Relationship) task;
+            r.setVertexInDag(this.vertices);
+        }
+        super.applyRelationship();
     }
 }

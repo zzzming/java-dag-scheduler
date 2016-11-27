@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.zzz.jds.dag;
+package org.zzz.jds.dag.exception;
 
 /**
  * @author ming luo
