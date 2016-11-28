@@ -7,9 +7,9 @@ package org.zzz.jds.dag;
  * @author ming luo
  *
  */
-public class TaskTag<Task> extends Dag<Task> {
+public class TaskDag<Task> extends Dag<Task> {
 
-    public TaskTag(Task t) {
+    public TaskDag(Task t) {
         super(t);
     }
 

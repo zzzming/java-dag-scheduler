@@ -16,6 +16,7 @@ public final class Pid {
 
     private Map<String, UUID> pidMap = new ConcurrentHashMap<>();
     private Map<UUID, Actor>  actors = new ConcurrentHashMap<>();
+    public Map<UUID, String> tests = new ConcurrentHashMap<>();
 
     /**
      * Private constructor.
@@ -39,37 +40,25 @@ public final class Pid {
         private static final Pid instance = new Pid();
     }
 
-    public UUID register(String alias, Actor actor) {
-        UUID id = UUID.randomUUID();
-        return register(alias, id, actor);
+    public void register(String alias, Actor actor) {
+        pidMap.putIfAbsent(alias, actor.getPid());
+        register(actor);
     }
-    public UUID register(String alias, UUID id, Actor actor) {
-        this.pidMap.put(alias, id);
-        return register(id, actor);
-    }
-    public UUID register(UUID id, Actor actor) {
-        this.actors.put(id, actor);
-        return id;
-    }
-    public UUID register(Actor actor) {
-        UUID id = UUID.randomUUID();
-        return register(id, actor);
+    public void register(Actor actor) {
+        actors.putIfAbsent(actor.getPid(), actor);
     }
     public UUID getPid(String alias) {
         return pidMap.get(alias);
     }
-    public void send (UUID fromId, String message, UUID toId) {
+    public void send (UUID toId, String message, UUID fromId) {
         new Thread(() -> {
-           this.actors.get(fromId).receive(fromId, message);
+           this.actors.get(toId).receive(fromId, message);
         }).start();
     }
-    public void send (String alias, String message, UUID toId) {
-        new Thread(() -> {
-           Optional<UUID> op = Optional.of(getPid(alias));
-           if (op.isPresent()) {
-               UUID fromId = op.get();
-               this.actors.get(fromId).receive(fromId, message);
-           }
-        }).start();
+    public void send (String alias, String message, UUID fromId) {
+       Optional<UUID> op = Optional.of(getPid(alias));
+       if (op.isPresent()) {
+           send(op.get(), message, fromId);
+       }
     }
 }
