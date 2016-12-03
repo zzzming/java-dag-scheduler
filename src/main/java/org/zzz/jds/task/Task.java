@@ -24,7 +24,7 @@ import org.zzz.jds.dag.Vertex;
  */
 public class Task implements Actor, Relationship {
 
-	final static int INFINITE = -1;
+    final static int INFINITE = -1;
     Set<UUID> parents = new HashSet<>();
     Set<UUID> children = new HashSet<>();
     @SuppressWarnings("rawtypes")

@@ -16,7 +16,6 @@ public final class Pid {
 
     private Map<String, UUID> pidMap = new ConcurrentHashMap<>();
     private Map<UUID, Actor>  actors = new ConcurrentHashMap<>();
-    public Map<UUID, String> tests = new ConcurrentHashMap<>();
 
     /**
      * Private constructor.
@@ -36,13 +35,13 @@ public final class Pid {
      * Java memory model guarantees this class initialization.
      */
     private static class Loader {
-
         private static final Pid instance = new Pid();
     }
 
     public void register(String alias, Actor actor) {
-        pidMap.putIfAbsent(alias, actor.getPid());
-        register(actor);
+        if (null == pidMap.putIfAbsent(alias, actor.getPid())) {
+            register(actor);
+        }
     }
     public void register(Actor actor) {
         actors.putIfAbsent(actor.getPid(), actor);
@@ -60,5 +59,8 @@ public final class Pid {
        if (op.isPresent()) {
            send(op.get(), message, fromId);
        }
+    }
+    public int getActorSize() {
+       return this.actors.size();
     }
 }
