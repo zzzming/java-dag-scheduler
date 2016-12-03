@@ -183,8 +183,8 @@ public class Dag <T> extends Vertex {
      * Relationship refers to parent and child UUID.
      */
     public void applyRelationship() {
-    	if (task instanceof Relationship) {
-            Relationship r = (Relationship) task;
+    	if (task instanceof DagRelationship) {
+            DagRelationship r = (DagRelationship) task;
             r.setVertexInDag(this.vertices);
         }
         super.applyRelationship();

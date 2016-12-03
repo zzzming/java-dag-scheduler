@@ -18,6 +18,4 @@ public interface Relationship {
 	public void addParent(UUID id);
     public void addChild(UUID id);
     public void setId(UUID id);
-
-    public void setVertexInDag(Map<UUID, Vertex<?>> m);
 }

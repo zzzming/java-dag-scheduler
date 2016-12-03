@@ -49,12 +49,12 @@ public final class Pid {
     public UUID getPid(String alias) {
         return pidMap.get(alias);
     }
-    public void send (UUID toId, String message, UUID fromId) {
+    public void send (UUID toId, Object message, UUID fromId) {
         new Thread(() -> {
            this.actors.get(toId).receive(fromId, message);
         }).start();
     }
-    public void send (String alias, String message, UUID fromId) {
+    public void send (String alias, Object message, UUID fromId) {
        Optional<UUID> op = Optional.of(getPid(alias));
        if (op.isPresent()) {
            send(op.get(), message, fromId);

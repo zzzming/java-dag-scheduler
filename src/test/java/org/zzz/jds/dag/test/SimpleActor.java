@@ -20,8 +20,12 @@ public class SimpleActor implements Actor {
         register(alias);
     }
     @Override
-    public void receive(UUID fromId, String message) {
-        receivedMsg = message;
+    public void receive(UUID fromId, Object message) {
+        if ( message instanceof String) {
+             receivedMsg = (String) message;
+        } else {
+            receivedMsg = "received type non-compliant message";
+        }
         senderUUID = fromId;
     }
     public UUID getSender() {

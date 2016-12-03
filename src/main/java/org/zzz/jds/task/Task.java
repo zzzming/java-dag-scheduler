@@ -3,14 +3,21 @@
  */
 package org.zzz.jds.task;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.zzz.actor.Actor;
 import org.zzz.actor.Pid;
@@ -22,94 +29,105 @@ import org.zzz.jds.dag.Vertex;
  * @param <T>
  *
  */
-public class Task implements Actor, Relationship {
+public class Task implements Actor, Callable<Boolean> {
 
-    final static int INFINITE = -1;
-    Set<UUID> parents = new HashSet<>();
-    Set<UUID> children = new HashSet<>();
+    CountDownLatch parentLatch;
+
     @SuppressWarnings("rawtypes")
     Set<Task> containedTasks = new HashSet<>();
 
-    UUID id;
     Pid pid = Pid.getInstance();
-    Callable<Integer> call;
-    long timeout = INFINITE;
+    VertexTaskConfig config;
+    boolean isDag = false;
+    private long runtimeTO = -1;
 
-    public Task (Callable<Integer> thread, long timeout) {
-       this.call = thread;
-       this.timeout = timeout;
+    public Task (VertexTaskConfig config) {
+       this.isDag = config instanceof DagTaskConfig;
+       this.config = config;
+       parentLatch = new CountDownLatch(config.parents.size());
        pid.register(this);
     }
-    public Task (Callable<Integer> thread) {
-       this(thread, INFINITE);
+
+    public void setTimeout(long timeout) {
+       runtimeTO = timeout;
+    }
+    @Override
+    public Boolean call() throws Exception {
+       long allocTimeout = runtimeTO > 0 ? Math.min(this.config.getTimeout(), runtimeTO)
+    		   : this.config.getTimeout();
+       long start = Util.getNowInSeconds();
+       waitForParents(allocTimeout);
+
+       long newTimeout = Util.getRemainingTimeout(allocTimeout, start);
+       if (newTimeout < 1) return new Boolean(false);
+
+       if(isDag) dag(newTimeout); else runTask(newTimeout);
+       this.clearDependencies();
+       return true;
     }
 
-    public void execute(long timeout) {
-       long allocTimeout = this.timeout == INFINITE ? timeout : Math.min(this.timeout, timeout);
-       //1. launch dag which contains a set of Vertex and their edge relations
-       dag(allocTimeout);
+    private void waitForParents(long timeout) {
+       try {
+           parentLatch.await(timeout, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+        }
     }
 
-    public Callable<Integer> getCallable() {
-       return this.call;
+    private void runTask(long timeout) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future f = executor.submit((Callable) config.getTask());
+        try {
+            f.get(timeout, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+
+            return;
+        }
     }
 
     private void dag(long timeout) {
-       int threadPoolSize = containedTasks.size();
-       if (threadPoolSize > 0) {
-           Set<Future<Integer>> futures = new HashSet<>();
-           ExecutorCompletionService<Integer> ecs = 
+        long start = Util.getNowInSeconds();
+        int threadPoolSize = containedTasks.size();
+        if (threadPoolSize > 0) {
+            Set<Future<Boolean>> futures = new HashSet<>();
+            ExecutorCompletionService<Boolean> ecs = 
                    new ExecutorCompletionService<>(Executors.newFixedThreadPool(threadPoolSize));
-           containedTasks.forEach(t -> {
-               futures.add(ecs.submit(t.getCallable()));
-           });
+            containedTasks.forEach(t -> {
+               futures.add(ecs.submit(t));
+            });
 
-           for (int i = 0; i < futures.size(); ++i) {
-               Future<Integer> r = ecs.poll();
-           }
-       }
-    }
-
-	@Override
-	public UUID getPid() {
-		return this.id;
-	}
-
-    @Override
-    public void receive(UUID fromId, String message) {
-        switch (message) {
-        case "clear":
-        }
-	}
-
-	@Override
-	public long getTimeoutMilli() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-    @Override
-    public void addParent(UUID id) {
-        parents.add(id);
-    }
-
-    @Override
-    public void addChild(UUID id) {
-        children.add(id);
-    }
-
-    @Override
-    public void setId(UUID id) {
-        this.id = id;
-    }
-    @Override
-    public void setVertexInDag(Map<UUID, Vertex<?>> m) {
-        m.values().forEach( v -> {
-            Object o = v.getTask();
-            if (o instanceof Task) {
-                containedTasks.add((Task) o);
+            int completed = 0;
+            while (completed < threadPoolSize) {
+                if (Util.isTimedOut(start, timeout)) break;
+                Optional<Future<Boolean>> o = Optional.of(ecs.poll());
+                if (o.isPresent()) completed++;
+                Util.sleepSeconds(1); //TODO: change to sleep 10ms
             }
-        });
+        }
+    }
+
+    private void clearDependencies() {
+       this.config.children.parallelStream().forEach(e -> 
+           this.send((UUID)e, new CompletionMessage(getPid()))
+       );
+    }
+    @Override
+    public UUID getPid() {
+        return this.config.getPid();
+    }
+
+    @Override
+    public void receive(UUID fromId, Object message) {
+        if (message instanceof CompletionMessage) {
+            CompletionMessage msg = (CompletionMessage)message;
+            if (config.removeParent(msg.getFromUUID())) {
+                parentLatch.countDown();
+            }
+        }
+    }
+
+    @Override
+    public long getTimeoutMilli() {
+       return this.config.getTimeout();
     }
 
 }
