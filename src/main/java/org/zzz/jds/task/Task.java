@@ -48,6 +48,9 @@ public class Task implements Actor, Callable<Boolean> {
        pid.register(this);
     }
 
+    public void addTaskVertices(Set<Task> tasks) {
+       containedTasks.addAll(tasks);
+    }
     public void setTimeout(long timeout) {
        runtimeTO = timeout;
     }
@@ -87,21 +90,22 @@ public class Task implements Actor, Callable<Boolean> {
     private void dag(long timeout) {
         long start = Util.getNowInSeconds();
         int threadPoolSize = containedTasks.size();
-        if (threadPoolSize > 0) {
-            Set<Future<Boolean>> futures = new HashSet<>();
-            ExecutorCompletionService<Boolean> ecs = 
-                   new ExecutorCompletionService<>(Executors.newFixedThreadPool(threadPoolSize));
-            containedTasks.forEach(t -> {
-               futures.add(ecs.submit(t));
-            });
+        if (threadPoolSize < 1) {
+        	return;
+        }
+        Set<Future<Boolean>> futures = new HashSet<>();
+        ExecutorCompletionService<Boolean> ecs = 
+               new ExecutorCompletionService<>(Executors.newFixedThreadPool(threadPoolSize));
+        containedTasks.forEach(t -> {
+           futures.add(ecs.submit(t));
+        });
 
-            int completed = 0;
-            while (completed < threadPoolSize) {
-                if (Util.isTimedOut(start, timeout)) break;
-                Optional<Future<Boolean>> o = Optional.of(ecs.poll());
-                if (o.isPresent()) completed++;
-                Util.sleepSeconds(1); //TODO: change to sleep 10ms
-            }
+        int completed = 0;
+        while (completed < threadPoolSize) {
+            if (Util.isTimedOut(start, timeout)) break;
+            Optional<Future<Boolean>> o = Optional.of(ecs.poll());
+            if (o.isPresent()) completed++;
+            Util.sleepMilliseconds(10);
         }
     }
 

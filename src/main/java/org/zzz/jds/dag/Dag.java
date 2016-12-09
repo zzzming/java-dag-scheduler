@@ -173,17 +173,13 @@ public class Dag <T> extends Vertex {
        });
     }
     /**
-     * TODO: Neatly print the data structure of the graph.
-     * It's a static method for general printing purpose.
-     */
-    static public void prettyPrint (Map<UUID, Vertex<?>> vMap) {
-    }
-    /**
      * If T is a relationship interface, vertex can apply its relationship to T.
+     * Recursively apply relationships to all the vertices.
      * Relationship refers to parent and child UUID.
      */
     public void applyRelationship() {
-    	if (task instanceof DagRelationship) {
+        this.vertices.values().forEach(v -> v.applyRelationship());
+        if (task instanceof DagRelationship) {
             DagRelationship r = (DagRelationship) task;
             r.setVertexInDag(this.vertices);
         }

@@ -31,11 +31,22 @@ public final class Util {
         return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
     }
     /**
+     * Sleep in the unit of Seconds.
      * @param seconds
      */
     public static void sleepSeconds(long seconds) {
         try {
             TimeUnit.SECONDS.sleep(seconds);
+        } catch (InterruptedException e) {
+        }
+    }
+    /**
+     * Sleep in the unit of milliseconds.
+     * @param milliseconds
+     */
+    public static void sleepMilliseconds(long milliseconds) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(milliseconds);
         } catch (InterruptedException e) {
         }
     }
