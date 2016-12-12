@@ -51,7 +51,7 @@ public final class Pid {
     }
     public void send (UUID toId, Object message, UUID fromId) {
         new Thread(() -> {
-           this.actors.get(toId).receive(fromId, message);
+           this.actors.get(toId).invoke(fromId, message);
         }).start();
     }
     public void send (String alias, Object message, UUID fromId) {

@@ -15,7 +15,7 @@ import java.util.UUID;
  */
 public interface Relationship {
 
-	public void addParent(UUID id);
+    public void addParent(UUID id);
     public void addChild(UUID id);
     public void setId(UUID id);
 }

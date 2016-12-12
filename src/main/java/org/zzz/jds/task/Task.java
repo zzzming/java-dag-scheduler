@@ -130,7 +130,7 @@ public class Task implements Actor, Callable<Boolean> {
     }
 
     @Override
-    public long getTimeoutMilli() {
+    public long getTimeoutMilliSeconds() {
        return this.config.getTimeout();
     }
 
