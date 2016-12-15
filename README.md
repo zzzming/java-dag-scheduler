@@ -1,5 +1,7 @@
 # java-dag-scheduler
-Java task scheduler to execute threads which dependency is managed by directed acyclic graph.
+Java task scheduler to execute threads which dependency is managed by directed acyclic graph. Carl Hewitt Actor Model is implemented to provide message passing.
+
+TODO: to separate Actor Model as a separate project.
 
 # Components
 ## Direct acyclic graph
