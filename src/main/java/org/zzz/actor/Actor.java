@@ -8,7 +8,8 @@ import java.util.UUID;
 import org.zzz.jds.task.Util;
 
 /**
- * Actor Model interface.
+ * Actor Model interface implements Carl Hewitt's Actor model, which Erlang also employs
+ * the same Actor model.
  * @author ming luo
  *
  */

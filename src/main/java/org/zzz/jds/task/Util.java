@@ -28,7 +28,24 @@ public final class Util {
      * @return
      */
     public static long getNowInSeconds() {
-        return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+        return getNowTimeUnit(TimeUnit.SECONDS);
+    }
+    /**
+     * Get the current time in the specified time unit.
+     * @param timeUnit
+     * @return
+     */
+    public static long getNowTimeUnit(TimeUnit timeUnit) {
+        switch (timeUnit) {
+        case NANOSECONDS : return TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+        case MICROSECONDS: return TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis());
+        case MILLISECONDS: return TimeUnit.MILLISECONDS.toMillis(System.currentTimeMillis());
+        //default is seconds
+        case SECONDS : default: return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+        case MINUTES : return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis());
+        case HOURS: return TimeUnit.MILLISECONDS.toHours(System.currentTimeMillis());
+        case DAYS: return TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis());
+        }
     }
     /**
      * Sleep in the unit of Seconds.

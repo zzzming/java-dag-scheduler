@@ -32,7 +32,7 @@ public final class Pid {
     }
 
     /**
-     * Java memory model guarantees this class initialization.
+     * Java memory model guarantees this class initialisation.
      */
     private static class Loader {
         private static final Pid instance = new Pid();
