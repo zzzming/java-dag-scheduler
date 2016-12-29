@@ -16,8 +16,6 @@ import org.zzz.jds.dag.exception.DagCycleException;
 import org.zzz.jds.dag.exception.DuplicatedEdgeException;
 import org.zzz.jds.dag.exception.NonexistentVertexException;
 
-import com.rits.cloning.Cloner;
-
 /**
  * Direct acyclic graph
  * In this design, a DAG can also be a vertex possibly in another DAG.
@@ -114,16 +112,12 @@ public class Dag <T> extends Vertex {
      * @return
      */
     public boolean isDag() {
-        Cloner cloner = new Cloner();
-        /**
-         * TODO: remove deep clone
-         * Deep clone is a very inefficient way for sorting purpose
-         * extra space!!!
-         */
-        Map<UUID, Vertex<?>> map = cloner.deepClone(this.vertices);
-         Queue<Vertex<?>> s = topologicalSorting(map,
+        //soft clone all vertices in the dag just for topological sorting
+        Map<UUID, Vertex<?>> map = this.vertices.entrySet().parallelStream().
+                collect(Collectors.toMap( p -> p.getKey(), p -> p.getValue().softClone()));
+        Queue<Vertex<?>> s = topologicalSorting(map,
                  new LinkedBlockingQueue<>());
-         return !s.isEmpty();
+        return !s.isEmpty();
     }
     /**
      * topological sort algorithm

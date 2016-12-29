@@ -44,7 +44,7 @@ public class DagUnitTest {
         Dag<Integer> dag = new Dag<>(new Integer(0));
         dag.putEdge(n1, n2);
         dag.putEdge(n2, n1);
-        
+
         assertFalse(dag.isDag());
     }
 

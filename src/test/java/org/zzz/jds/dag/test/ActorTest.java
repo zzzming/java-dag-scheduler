@@ -3,8 +3,6 @@
  */
 package org.zzz.jds.dag.test;
 
-import static org.junit.Assert.*;
-
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 

@@ -3,13 +3,12 @@
  */
 package org.zzz.jds.task;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
@@ -18,11 +17,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
 import org.zzz.actor.Actor;
 import org.zzz.actor.Pid;
-import org.zzz.jds.dag.Relationship;
-import org.zzz.jds.dag.Vertex;
 
 /**
  * @author ming luo
@@ -51,6 +49,7 @@ public class Task implements Actor, Callable<Boolean> {
     public void addTaskVertices(Set<Task> tasks) {
        containedTasks.addAll(tasks);
     }
+
     public void setTimeout(long timeout) {
        runtimeTO = timeout;
     }
@@ -89,12 +88,14 @@ public class Task implements Actor, Callable<Boolean> {
 
     private void dag(long timeout) {
         long start = Util.getNowInSeconds();
+        System.out.println("thread pool size ~ " + containedTasks.size());
         int threadPoolSize = containedTasks.size();
         if (threadPoolSize < 1) {
-        	return;
+            return;
         }
+
         Set<Future<Boolean>> futures = new HashSet<>();
-        ExecutorCompletionService<Boolean> ecs = 
+        CompletionService<Boolean> ecs = 
                new ExecutorCompletionService<>(Executors.newFixedThreadPool(threadPoolSize));
         containedTasks.forEach(t -> {
            futures.add(ecs.submit(t));
@@ -102,9 +103,13 @@ public class Task implements Actor, Callable<Boolean> {
 
         int completed = 0;
         while (completed < threadPoolSize) {
+        	
             if (Util.isTimedOut(start, timeout)) break;
-            Optional<Future<Boolean>> o = Optional.of(ecs.poll());
-            if (o.isPresent()) completed++;
+            //Optional<Future<Boolean>> o = Optional.of(ecs.poll());
+            //TODO: handle failure case with time out
+            Future<Boolean> r = ecs.poll();
+            completed++;
+
             Util.sleepMilliseconds(10);
         }
     }

@@ -16,4 +16,11 @@ abstract public class Element {
     public UUID getId() {
         return this.id;
     }
+    /**
+     * for soft clone use only
+     * @param uuid
+     */
+    void setUUID(UUID uuid) {
+        this.id = uuid;
+    }
 }

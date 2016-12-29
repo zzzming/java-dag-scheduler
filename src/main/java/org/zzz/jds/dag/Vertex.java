@@ -26,6 +26,11 @@ public class Vertex <T> extends Element {
        super();
        task = t;
     }
+    private Vertex(Map<UUID, Edge> inDegrees, Map<UUID, Edge> outDegrees, UUID uuid) {
+       inDegree.putAll(inDegrees);
+       outDegree.putAll(outDegrees);
+       setUUID(uuid);
+    }
     public void addTask(T t) {
        task = t;
     }
@@ -64,6 +69,13 @@ public class Vertex <T> extends Element {
     }
     public Map<UUID, Edge> getOutDegree() {
         return outDegree;
+    }
+    /**
+     * Soft clone only clones the edges and the vertex UUID.
+     * @return
+     */
+    public Vertex softClone() {
+        return new Vertex(inDegree, outDegree, getId());
     }
     /**
      * If T is a relationship interface, vertex can apply its relationship to T.

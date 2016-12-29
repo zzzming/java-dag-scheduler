@@ -20,6 +20,7 @@ import org.zzz.jds.dag.Relationship;
 import org.zzz.jds.dag.Vertex;
 
 /**
+ * The config type for the task. Vertex will be responsible to propagate the relationship to this config class.
  * @author ming luo
  *
  */

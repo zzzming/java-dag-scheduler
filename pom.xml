@@ -20,12 +20,7 @@
        <artifactId>akka-actor_2.11</artifactId>
        <version>2.4.14</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/uk.com.robust-it/cloning -->
-    <dependency>
-      <groupId>uk.com.robust-it</groupId>
-      <artifactId>cloning</artifactId>
-      <version>1.7.4</version>
-    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
