@@ -13,6 +13,7 @@ import java.util.UUID;
  *
  */
 public interface DagRelationship extends Relationship {
+
     public void setVertexInDag(Map<UUID, Vertex<?>> m);
 
 }

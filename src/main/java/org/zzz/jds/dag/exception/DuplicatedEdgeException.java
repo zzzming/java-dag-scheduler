@@ -9,7 +9,7 @@ package org.zzz.jds.dag.exception;
  */
 public class DuplicatedEdgeException extends Exception {
 
-    public DuplicatedEdgeException(String string) {
+    public DuplicatedEdgeException(final String string) {
         super(string);
     }
 

@@ -38,28 +38,33 @@ public final class Pid {
         private static final Pid instance = new Pid();
     }
 
-    public void register(String alias, Actor actor) {
+    public void register(final String alias, final Actor actor) {
         if (null == pidMap.putIfAbsent(alias, actor.getPid())) {
             register(actor);
         }
     }
-    public void register(Actor actor) {
+
+    public void register(final Actor actor) {
         actors.putIfAbsent(actor.getPid(), actor);
     }
-    public UUID getPid(String alias) {
+
+    public UUID getPid(final String alias) {
         return pidMap.get(alias);
     }
-    public void send (UUID toId, Object message, UUID fromId) {
+
+    public void send (final UUID toId, final Object message, final UUID fromId) {
         new Thread(() -> {
            this.actors.get(toId).invoke(fromId, message);
         }).start();
     }
-    public void send (String alias, Object message, UUID fromId) {
+
+    public void send (final String alias, final Object message, final UUID fromId) {
        Optional<UUID> op = Optional.of(getPid(alias));
        if (op.isPresent()) {
            send(op.get(), message, fromId);
        }
     }
+
     public int getActorSize() {
        return this.actors.size();
     }

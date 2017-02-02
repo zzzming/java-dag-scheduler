@@ -9,7 +9,7 @@ package org.zzz.jds.dag.exception;
  */
 public class NonexistentEdgeException extends Exception {
 
-	public NonexistentEdgeException(String string) {
+	public NonexistentEdgeException(final String string) {
         super(string);
     }
 

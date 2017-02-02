@@ -9,7 +9,7 @@ package org.zzz.jds.dag.exception;
  */
 public final class DagCycleException extends Exception{
 
-    public DagCycleException(String string) {
+    public DagCycleException(final String string) {
         super(string);
     }
 

@@ -3,8 +3,6 @@
  */
 package org.zzz.jds.task.test;
 
-import static org.junit.Assert.*;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;

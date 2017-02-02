@@ -9,7 +9,7 @@ package org.zzz.jds.dag.exception;
  */
 public class NonexistentVertexException extends Exception {
 
-    public NonexistentVertexException(String string) {
+    public NonexistentVertexException(final String string) {
         super(string);
     }
     /**

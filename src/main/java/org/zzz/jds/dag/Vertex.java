@@ -74,7 +74,8 @@ public class Vertex <T> extends Element {
      * Soft clone only clones the edges and the vertex UUID.
      * @return
      */
-    public Vertex softClone() {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public Vertex softClone() {
         return new Vertex(inDegree, outDegree, getId());
     }
     /**
@@ -91,8 +92,7 @@ public class Vertex <T> extends Element {
     }
     public boolean equals(Object o) {
         if (o instanceof Vertex) {
-            Vertex v = (Vertex)o;
-            return this.getId().equals(v.getId());
+            return this.getId().equals(((Vertex)o).getId());
         } else {
             return false;
         }
